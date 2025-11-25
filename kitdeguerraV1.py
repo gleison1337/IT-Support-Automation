@@ -54,7 +54,7 @@ class TechToolApp(ctk.CTk):
             # Fallback caso não tenha imagem
             print(f"Erro no banner: {e}")
             self.banner_frame.configure(fg_color="#1f538d") # Cor de fundo azul se falhar imagem
-            self.lbl_banner = ctk.CTkLabel(self.banner_frame, text="VeloTrack IT - Dashboard", font=("Impact", 36), text_color="white")
+            self.lbl_banner = ctk.CTkLabel(self.banner_frame, text="Kit de Guerra N1", font=("Impact", 36), text_color="white")
             self.lbl_banner.pack(pady=40)
 
         # --- 2. MENU LATERAL (Esquerda) ---
