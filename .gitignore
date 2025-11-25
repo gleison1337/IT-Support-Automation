@@ -1,0 +1,18 @@
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Ambientes Virtuais
+venv/
+env/
+
+# PyInstaller (Arquivos de compilação que não devem subir)
+build/
+dist/
+*.spec
+
+# VS Code
+.vscode/
+
+# Imagens locais de teste (se quiser ignorar)
+*.log
