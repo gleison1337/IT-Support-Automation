@@ -37,9 +37,10 @@ class TechToolApp(ctk.CTk):
                 {"name": "Atualizar Políticas", "cmd": lambda: self.run_thread("gpupdate /force", "Políticas atualizadas"), "desc": "Força atualização de GPO."}
             ],
             "Aplicativos": [
-                {"name": "Reparar Outlook", "cmd": self.cmd_open_outlook, "desc": "Tenta abrir Outlook ou forçar modo de segurança."},
-                {"name": "Reiniciar OneDrive", "cmd": self.cmd_restart_onedrive, "desc": "Mata o processo e reinicia o executável local."},
-                {"name": "Credenciais", "cmd": lambda: self.run_thread("control /name Microsoft.CredentialManager", "Cofre Aberto"), "desc": "Abre gerenciador de senhas do Windows."}
+                {"name": "Reparar Perfil Outlook", "cmd": self.cmd_open_outlook, "desc": "Tenta abrir Outlook ou forçar modo de segurança."},
+                {"name": "Resetar OneDrive", "cmd": self.cmd_restart_onedrive, "desc": "Mata o processo e reinicia o executável local."},
+                {"name": "Cofre de Credenciais", "cmd": lambda: self.run_thread("control /name Microsoft.CredentialManager", "Cofre Aberto"), "desc": "Abre gerenciador de senhas do Windows."},
+                {"name": "Modo Seguro Office", "cmd": self.cmd_office_safe_menu, "desc": "Menu para abrir Excel/Word/PPT em modo seguro."}
             ],
             "Impressão": [
                 {"name": "Fila de Impressão", "cmd": lambda: self.run_thread("rundll32 printui.dll,PrintUIEntry /v", "Fila aberta"), "desc": "Abre fila para cancelar jobs travados."},
@@ -81,7 +82,7 @@ class TechToolApp(ctk.CTk):
             lbl_banner = ctk.CTkLabel(self.banner_container, text="", image=self.banner_img)
             lbl_banner.pack()
         except:
-            lbl_banner = ctk.CTkLabel(self.banner_container, text="KIT DE GUERRA", font=("Impact", 60), text_color="white")
+            lbl_banner = ctk.CTkLabel(self.banner_container, text="N1 Tools", font=("Impact", 60), text_color="white")
             lbl_banner.pack(pady=40)
 
         # 2. Informações / Apresentação
@@ -109,6 +110,7 @@ class TechToolApp(ctk.CTk):
         self.create_big_btn(menu_grid, "💻 APLICATIVOS", "Outlook, OneDrive", 1, 0, lambda: self.go_to_category("Aplicativos"))
         # Botão Impressão
         self.create_big_btn(menu_grid, "🖨️ IMPRESSÃO", "Fila, Spooler", 1, 1, lambda: self.go_to_category("Impressão"))
+        
         
         # Botão Sobre (Pequeno embaixo)
         btn_about = ctk.CTkButton(self.home_frame, text="ℹ️ Sobre & Créditos", command=self.cmd_about, fg_color="transparent", border_width=1, text_color="#aaa")
@@ -160,10 +162,10 @@ class TechToolApp(ctk.CTk):
         self.log_box.pack(expand=True, fill="both", pady=5)
         
         # Cores do Log
-        self.log_box._textbox.tag_config("SUCCESS", foreground="#00E676")
-        self.log_box._textbox.tag_config("ERROR", foreground="#FF5252")
+        self.log_box._textbox.tag_config("SUCESSO", foreground="#00E676")
+        self.log_box._textbox.tag_config("ERRO", foreground="#FF5252")
         self.log_box._textbox.tag_config("INFO", foreground="#40C4FF")
-        self.log_box._textbox.tag_config("WARNING", foreground="#FFD740")
+        self.log_box._textbox.tag_config("AVISO", foreground="#FFD740")
         
         # Rodapé de Ajuda no Dashboard
         self.dash_desc = ctk.CTkLabel(right_panel, text="Selecione uma função à esquerda...", text_color="#888", font=("Arial", 12, "italic"))
@@ -209,8 +211,8 @@ class TechToolApp(ctk.CTk):
     # =========================================================================
     def run_all_in_category(self):
         def task_sequence():
-            self.write_log("⚡ INICIANDO EXECUÇÃO EM LOTE...", "WARNING")
-            self.write_log("Por favor, aguarde o fim de cada processo.", "WARNING")
+            self.write_log("⚡ INICIANDO EXECUÇÃO EM LOTE...", "AVISO")
+            self.write_log("Por favor, aguarde o fim de cada processo.", "AVISO")
             
             total = len(self.current_category_items)
             for i, item in enumerate(self.current_category_items):
@@ -246,12 +248,12 @@ class TechToolApp(ctk.CTk):
                 result = subprocess.run(command, shell=True, capture_output=True, text=True, encoding='cp850', errors='ignore')
                 output = result.stdout + result.stderr
                 if check_error and ("erro" in output.lower() or "falha" in output.lower() or "access denied" in output.lower()):
-                     self.write_log(f"Alerta:\n{output}", "WARNING")
+                     self.write_log(f"Alerta:\n{output}", "AVISO")
                 else:
-                    if success_msg: self.write_log(success_msg, "SUCCESS")
+                    if success_msg: self.write_log(success_msg, "SUCESSO")
                     else: self.write_log(output.strip(), "INFO")
             except Exception as e:
-                self.write_log(f"Erro: {str(e)}", "ERROR")
+                self.write_log(f"Erro: {str(e)}", "ERRO")
         threading.Thread(target=task).start()
 
     # --- FUNÇÕES NATIVAS (Mantidas iguais à V2) ---
@@ -270,11 +272,11 @@ class TechToolApp(ctk.CTk):
                         import re
                         match = re.search(r"(Média|Average) = (\d+ms)", output)
                         time_ms = match.group(2) if match else "<10ms"
-                        self.write_log(f"✅ CONEXÃO ESTÁVEL. Latência: {time_ms}", "SUCCESS")
+                        self.write_log(f"✅ CONEXÃO ESTÁVEL. Latência: {time_ms}", "SUCESSO")
                     else:
-                        self.write_log("❌ FALHA DE CONEXÃO.", "ERROR")
+                        self.write_log("❌ FALHA DE CONEXÃO.", "ERRO")
             except Exception as e:
-                self.write_log(f"Erro: {str(e)}", "ERROR")
+                self.write_log(f"Erro: {str(e)}", "ERRO")
         threading.Thread(target=task).start()
 
     def cmd_clean_temp(self):
@@ -288,7 +290,7 @@ class TechToolApp(ctk.CTk):
                         os.remove(os.path.join(root, name))
                         deleted += 1
                     except: pass
-            self.write_log(f"✅ LIMPEZA CONCLUÍDA. Arquivos removidos: {deleted}", "SUCCESS")
+            self.write_log(f"✅ LIMPEZA CONCLUÍDA. Arquivos removidos: {deleted}", "SUCESSO")
         threading.Thread(target=task).start()
 
     def cmd_ipconfig(self):
@@ -297,7 +299,7 @@ class TechToolApp(ctk.CTk):
             output = subprocess.check_output("ipconfig", shell=True, encoding='cp850')
             relevant = [line for line in output.split('\n') if "IPv4" in line or "Gateway" in line or "Adaptador" in line]
             self.write_log("\n".join(relevant), "INFO")
-            if "169.254" in output: self.write_log("⚠️ ALERTA: IP APIPA (169.254) DETECTADO.", "ERROR")
+            if "169.254" in output: self.write_log("⚠️ ALERTA: IP APIPA (169.254) DETECTADO.", "ERRO")
         threading.Thread(target=task).start()
 
     def cmd_sysinfo(self):
@@ -306,29 +308,137 @@ class TechToolApp(ctk.CTk):
             try:
                 cmd = "powershell \"Get-CimInstance -ClassName Win32_BIOS | Select-Object -ExpandProperty SerialNumber\""
                 serial = subprocess.check_output(cmd, shell=True, text=True).strip()
-                self.write_log(f"Hostname: {platform.node()}", "SUCCESS")
-                self.write_log(f"Serial: {serial}", "SUCCESS")
-            except: self.write_log("Falha ao ler serial.", "ERROR")
+                self.write_log(f"Hostname: {platform.node()}", "SUCESSO")
+                self.write_log(f"Serial: {serial}", "SUCESSO")
+            except: self.write_log("Falha ao ler serial.", "ERRO")
         threading.Thread(target=task).start()
 
     def cmd_open_outlook(self):
         def task():
-            self.write_log("Buscando Outlook...", "INFO")
-            subprocess.Popen(["start", "outlook"], shell=True) # Simplificado para brevidade
-            self.write_log("Comando enviado.", "INFO")
+            self.write_log("🔪 Iniciando Reset de Perfil do Outlook...", "AVISO")
+            
+            # 1. Matar o Outlook se estiver aberto (para não travar o arquivo)
+            self.write_log("Fechando Outlook...", "INFO")
+            subprocess.run("taskkill /f /im outlook.exe", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            time.sleep(2)
+            
+            # 2. Deletar a chave de registro onde ficam os perfis
+            # Isso equivale a ir no Painel de Controle e excluir todos os perfis manualmente.
+            # Caminho padrão para Office 2016, 2019 e 365
+            reg_path = r"HKCU\Software\Microsoft\Office\16.0\Outlook\Profiles"
+            
+            # Comando para deletar a chave silenciosamente (/f)
+            cmd_delete = f'reg delete "{reg_path}" /f'
+            
+            self.write_log("⚙️ Excluindo perfis antigos no Registro...", "AVISO")
+            result = subprocess.run(cmd_delete, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            
+            if result.returncode == 0:
+                self.write_log("✅ Perfil removido com sucesso.", "SUCESSO")
+            else:
+                # Se der erro, pode ser que a chave não exista (já estava limpo) ou seja uma versão antiga (15.0)
+                self.write_log("Aviso: Perfil padrão não encontrado ou já removido.", "INFO")
+            
+            time.sleep(1)
+
+            # 3. Abrir o Outlook
+            # Como não tem perfil, ele vai abrir AUTOMATICAMENTE a tela de "Adicionar Conta"
+            self.write_log("🚀 Abrindo Outlook para nova configuração...", "INFO")
+            subprocess.Popen("start outlook", shell=True)
+            
+            self.write_log("🏁 Pronto. A tela de configuração do novo e-mail foi aberta.", "SUCESSO")
+
         threading.Thread(target=task).start()
 
     def cmd_restart_onedrive(self):
         def task():
-            self.write_log("Reiniciando OneDrive...", "WARNING")
-            subprocess.run("taskkill /f /im OneDrive.exe", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            time.sleep(1)
-            user_onedrive = os.path.join(os.getenv('LOCALAPPDATA'), r"Microsoft\OneDrive\OneDrive.exe")
-            if os.path.exists(user_onedrive):
-                subprocess.Popen(user_onedrive)
-                self.write_log("✅ Reiniciado.", "SUCCESS")
-            else: self.write_log("Executável não achado.", "ERROR")
+            self.write_log("🔍 Rastreando executável do OneDrive...", "INFO")
+            
+            # Lista de caça: Vamos procurar em todos os buracos onde ele costuma se esconder
+            locais_possiveis = [
+                # 1. O local EXATO do seu print (Program Files)
+                r"C:\Program Files\Microsoft OneDrive\OneDrive.exe",
+                # 2. O local para instalações 32-bits
+                r"C:\Program Files (x86)\Microsoft OneDrive\OneDrive.exe",
+                # 3. O local padrão de instalação por usuário (AppData)
+                os.path.join(os.getenv('LOCALAPPDATA'), r"Microsoft\OneDrive\OneDrive.exe")
+            ]
+            
+            onedrive_path = None
+            
+            # Varredura
+            for caminho in locais_possiveis:
+                if os.path.exists(caminho):
+                    onedrive_path = caminho
+                    break # Achou, para de procurar
+            
+            if onedrive_path:
+                try:
+                    self.write_log(f"✅ Localizado em: {onedrive_path}", "SUCESSO")
+                    self.write_log("⚠️ Executando Reset (redefinir)...", "AVISO")
+                    
+                    # Executa o reset.
+                    subprocess.run(f'"{onedrive_path}" /reset', shell=True, check=False)
+                    
+                    self.write_log("⏳ Aguardando 5s para reiniciar...", "INFO")
+                    time.sleep(5)
+                    
+                    # Ressuscita o OneDrive
+                    self.write_log("🚀 Reiniciando OneDrive...", "INFO")
+                    subprocess.Popen(f'"{onedrive_path}"', shell=True)
+                    
+                    self.write_log("🏁 Processo de Reset concluído. Aguarde algumas horas para sincronizar completamente.", "SUCCESS")
+                    
+                except Exception as e:
+                    self.write_log(f"Erro na execução: {str(e)}", "ERRO")
+            else:
+                self.write_log("❌ OneDrive.exe não encontrado nem no Program Files nem no AppData.", "ERRO")
+
         threading.Thread(target=task).start()
+
+    def cmd_office_safe_menu(self):
+        import tkinter as tk # Garantindo que o tk esteja disponível
+        
+        # Função interna que executa o comando
+        def run_safe(app_exec, nome_bonito):
+            self.write_log(f"🚀 Iniciando {nome_bonito} em Modo Seguro...", "INFO")
+            try:
+                # O comando /safe abre sem plugins
+                subprocess.Popen(f"{app_exec} /safe", shell=True)
+                self.write_log(f"✅ Comando enviado para {nome_bonito}.", "SUCCESS")
+                janela_safe.destroy() # Fecha o menu depois de clicar
+            except Exception as e:
+                self.write_log(f"❌ Erro ao abrir {nome_bonito}: {str(e)}", "ERROR")
+
+        # --- Criação da Janela Flutuante (Popup) ---
+        janela_safe = tk.Toplevel()
+        janela_safe.title("Modo de Segurança")
+        janela_safe.geometry("300x250")
+        janela_safe.configure(bg="#2b2b2b") # Mesma cor escura do fundo
+        
+        # Título do Menu
+        lbl = tk.Label(janela_safe, text="Escolha o aplicativo:", fg="white", bg="#2b2b2b", font=("Arial", 10, "bold"))
+        lbl.pack(pady=10)
+
+        # Botão EXCEL
+        btn_excel = tk.Button(janela_safe, text="Excel (/safe)", bg="#1D6F42", fg="white", width=20,
+                              command=lambda: run_safe("excel.exe", "Excel"))
+        btn_excel.pack(pady=5)
+
+        # Botão WORD
+        btn_word = tk.Button(janela_safe, text="Word (/safe)", bg="#2B579A", fg="white", width=20,
+                             command=lambda: run_safe("winword.exe", "Word"))
+        btn_word.pack(pady=5)
+
+        # Botão POWERPOINT
+        btn_ppt = tk.Button(janela_safe, text="PowerPoint (/safe)", bg="#D24726", fg="white", width=20,
+                            command=lambda: run_safe("powerpnt.exe", "PowerPoint"))
+        btn_ppt.pack(pady=5)
+
+        # Botão OUTLOOK (Bônus - muito útil)
+        btn_outlook = tk.Button(janela_safe, text="Outlook (/safe)", bg="#0078D4", fg="white", width=20,
+                                command=lambda: run_safe("outlook.exe", "Outlook"))
+        btn_outlook.pack(pady=5)
 
     def cmd_about(self):
         about = ctk.CTkToplevel(self)
